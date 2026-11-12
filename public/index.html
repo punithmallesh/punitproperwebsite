@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Premium Leather Co. - Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <h1>🧥 Premium Leather Co.</h1>
+        <div class="card">
+            <!-- Dynamic Form Header -->
+            <h2 id="form-title">User Account Login</h2>
+            
+            <!-- Unified Gateway Form -->
+            <form id="auth-form">
+                <!-- Registration Specific Field (Hidden by default) -->
+                <div id="register-fields" style="display: none;">
+                    <label>Full Name</label>
+                    <input type="text" id="username-input" name="username" placeholder="Enter Full Name">
+                </div>
+
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="Enter Registered Email" required>
+                
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter Password" required>
+                
+                <!-- The message will display right here under the fields, without changing the page -->
+                <div id="inline-error-msg" style="display: none; color: #dc2626; font-size: 13px; font-weight: 600; margin: -5px 0 15px 0; text-align: left; font-family: 'Segoe UI', Arial, sans-serif;">
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn primary-btn">Log In</button>
+            </form>
+
+            <!-- Interactive View Toggle Element -->
+            <div class="toggle-container">
+                <p id="toggle-text">Don't have an account?</p>
+                <button type="button" id="toggle-btn" class="btn secondary-btn">Create an Account</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const formTitle = document.getElementById('form-title');
+        const authForm = document.getElementById('auth-form');
+        const registerFields = document.getElementById('register-fields');
+        const usernameInput = document.getElementById('username-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const toggleText = document.getElementById('toggle-text');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const inlineError = document.getElementById('inline-error-msg');
+
+        let isLoginView = true;
+
+        toggleBtn.addEventListener('click', () => {
+            isLoginView = !isLoginView;
+            inlineError.style.display = "none"; 
+
+            if (isLoginView) {
+                formTitle.textContent = "User Account Login";
+                registerFields.style.display = "none";
+                usernameInput.removeAttribute('required');
+                submitBtn.textContent = "Log In";
+                toggleText.textContent = "Don't have an account?";
+                toggleBtn.textContent = "Create an Account";
+            } else {
+                formTitle.textContent = "Student Registration Gateway";
+                registerFields.style.display = "block";
+                usernameInput.setAttribute('required', 'true');
+                submitBtn.textContent = "Register Profile";
+                toggleText.textContent = "Already have an account?";
+                toggleBtn.textContent = "Back to Login";
+            }
+        });
+
+        // This intercepts the submit button to keep the user on the exact same page
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Blocks the browser from changing pages
+            inlineError.style.display = "none"; 
+
+            const actionPath = isLoginView ? '/login' : '/register';
+            const formData = new URLSearchParams(new FormData(authForm));
+
+            try {
+                const response = await fetch(actionPath, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                if (response.redirected) {
+                    // If login is successful, go to the order desk dashboard page
+                    window.location.href = response.url;
+                } else {
+                    // If login fails, put the text directly inside the error label
+                    const messageText = await response.text();
+                    inlineError.textContent = messageText;
+                    inlineError.style.display = "block";
+                }
+            } catch (err) {
+                inlineError.textContent = "Failed to communicate with the server.";
+                inlineError.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>

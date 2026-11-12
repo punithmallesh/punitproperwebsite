@@ -1,0 +1,80 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Leather Jacket Procurement Workshop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="nav-bar">
+        <h2>Leather Jacket Order Desk</h2>
+        <a href="/" class="logout-action">Log Out</a>
+    </div>
+
+    <div class="workspace-grid">
+        <div class="card">
+            <h3>Place a New Custom Jacket Order</h3>
+            <form action="/add-order" method="POST">
+                <label>Select Leather Jacket Silhouette:</label>
+                <select name="jacketStyle" required>
+                    <option value="Classic Cruiser Biker Jacket">Classic Cruiser Biker ($199)</option>
+                    <option value="Aviator Flight Bomber Jacket">Aviator Flight Bomber ($249)</option>
+                    <option value="Urban Café Racer Jacket">Urban Café Racer ($179)</option>
+                </select>
+
+                <label>Select Fitted Size Spec:</label>
+                <select name="size" required>
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                    <option value="X-Large">X-Large</option>
+                </select>
+
+                <label>Additional Customization Specs / Notes:</label>
+                <input type="text" name="customNotes" placeholder="e.g., Black matte hide finish, gold trims">
+                <button type="submit" class="btn primary-btn">Submit Order Specifications</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Active Production Processing Queue</h3>
+            <div id="queue-display">Syncing database asset registers...</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2026 Premium Leather Co. | BSc Computer Science Practical Lab Assignment</p>
+    </div>
+
+    <script>
+        async function fetchQueueData() {
+            const fetchResponse = await fetch('/view-orders');
+            const dataCollection = await fetchResponse.json();
+            const interfaceWrapper = document.getElementById('queue-display');
+            
+            if (dataCollection.length === 0) {
+                interfaceWrapper.innerHTML = "<p class='empty-alert'>No active tracking rows mapped in the database tables.</p>";
+                return;
+            }
+            interfaceWrapper.innerHTML = "";
+            
+            for (let i = 0; i < dataCollection.length; i++) {
+                const item = dataCollection[i];
+                interfaceWrapper.innerHTML += `
+                    <div class="item-block">
+                        <h4>${item.jacketStyle} &mdash; <span class="badge">${item.size}</span></h4>
+                        <p><strong>Custom Notes:</strong> ${item.customNotes || 'Standard Factory Configuration Layout'}</p>
+                        <form action="/update-order/${item._id}" method="POST" class="modifier-form">
+                            <input type="text" name="newNotes" placeholder="Revise specifications..." required>
+                            <button type="submit" class="action-link edit-link">Update Notes</button>
+                        </form>
+                        <form action="/delete-order/${item._id}" method="POST" style="display:inline;">
+                            <button type="submit" class="action-link cancel-link">Cancel Order</button>
+                        </form>
+                    </div>
+                `;
+            }
+        }
+        fetchQueueData();
+    </script>
+</body>
+</html>
